@@ -2,8 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="73d60f55-ad98-4f29-8a77-2f8060807834" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/app/controllers/banking/bankAccount.controller.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/mongoose/banking/balanceRequest.mongoose.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/mongoose/banking/bankAccount.mongoose.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/controllers/entity/application.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/entity/application.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/controllers/system/thirdParty.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/system/thirdParty.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/controllers/system/user.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/system/user.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/middlewares/verifytoken.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/middlewares/verifytoken.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/data/system/basic.data.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/data/system/basic.data.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/routes.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/routes.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,7 +27,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/app/controllers/system" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/app/models/mongoose/banking" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -29,10 +37,15 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/models/mongoose/banking" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/models/mongoose/banking" />
+      <recent name="$PROJECT_DIR$/app/controllers/banking" />
+      <recent name="$PROJECT_DIR$/app/models/mongoose/entity" />
       <recent name="$PROJECT_DIR$/app/controllers/system" />
       <recent name="$PROJECT_DIR$/app/models/mongoose/system" />
-      <recent name="$PROJECT_DIR$/app/models/mongoose" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -57,7 +70,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1600694772469</updated>
-      <workItem from="1600694773774" duration="8461000" />
+      <workItem from="1600694773774" duration="15880000" />
     </task>
     <servers />
   </component>

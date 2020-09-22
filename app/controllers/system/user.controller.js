@@ -10,7 +10,13 @@ class UserController {
     }
 
     async store (req, res) {
+        if (req.user === undefined) {
+            _response(res, 401,"Unauthorized.", null, null);
+        }
         try {
+            const rawData = req.body.data;
+            if (rawData === {} || rawData === undefined) { return _response(res, 401, "Unauthorized - cx1", null, null); }
+
             const createdUserData = req.body;
 
             const salt = await bcrypt.genSalt(10);

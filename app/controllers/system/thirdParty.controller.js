@@ -15,6 +15,9 @@ class ThirdPartyController {
     }
 
     async index(req, res) {
+        if (req.user === undefined) {
+            _response(res, 401,"Unauthorized.", null, null);
+        }
         try {
             const { page = 1, ...query } = req.query;
             const { filter, limit = 10, sort, projection, population } = aqp(query);
@@ -38,6 +41,9 @@ class ThirdPartyController {
     }
 
     async showForm (req, res) {
+        if (req.user === undefined) {
+            _response(res, 401,"Unauthorized.", null, null);
+        }
         try {
             _response(res, 200,"Data Found", null, await thirdPartyData.thirdPartyScheme());
         } catch (error) {
@@ -48,37 +54,44 @@ class ThirdPartyController {
 
     async authorize (req, res) {
         try {
-            const token = req.header('Authorization').split("Bearer ");
-            const credentials = token[1].split(":");
-            if (credentials[0] === "" || credentials[1] === "") { return _response(res, 401, true, "Unauthorized", meta, {}); }
-            const b = new Buffer.from(credentials[0], 'base64');
-            const public_key = b.toString();
+            const rawData = req.body.data;
+            if (rawData === {} || rawData === undefined) { return _response(res, 401, "Unauthorized - cx1", null, null); }
 
+            const rawDataAscii = new Buffer.from(rawData, 'base64');
+            const rawDataAsciiString = rawDataAscii.toString();
+            const credentials = rawDataAsciiString.split(":");
+            if (credentials[0] === "" || credentials[1] === "" || credentials[0] === undefined || credentials[1] === undefined) { return _response(res, 401, "Unauthorized - cx2", null, null); }
+
+            const clientKeyAscii = new Buffer.from(credentials[1], 'base64');
+            const clientKeyAsciiString = clientKeyAscii.toString();
             const foundThirdParty= await thirdParty
-                .findOne({public_key: public_key}, {}, {});
-
-            if (!foundThirdParty) return _response(res, 401, false, "Unauthorized - ax1");
+                .findOne({public_key: clientKeyAsciiString});
+            if (!foundThirdParty) return _response(res, 401, "Unauthorized - ax1", null, null);
 
             const password = foundThirdParty.secret_key;
-            const cryptoStr = credentials[1];
-
+            const cryptoStr = credentials[0];
             const bytes2 = CryptoJS.AES.decrypt(cryptoStr, password);
             const text = bytes2.toString(CryptoJS.enc.Utf8);
 
             const applicationCredentials = text.split(":");
 
-            const foundApplication = await application.findOne({code: applicationCredentials[0]});
-            if(!foundApplication) return _response(res, 401, false, "Unauthorized - ax2");
+            const codeAscii = new Buffer.from(applicationCredentials[0], 'base64');
+            const codeAsciiString = codeAscii.toString();
 
-            const validPassword = await bcrypt.compare(applicationCredentials[1], foundApplication.password);
-            if(!validPassword) return _response(res, 401, false, "Unauthorized - ax3");
+            const passwordAscii = new Buffer.from(applicationCredentials[1], 'base64');
+            const passwordAsciiString = passwordAscii.toString();
 
-            const newToken = jwt.sign({_id: foundThirdParty._id}, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const foundApplication = await application.findOne({code: codeAsciiString});
+            if(!foundApplication) return _response(res, 401, "Unauthorized - ax2", null, null);
+
+            const validPassword = await bcrypt.compare(passwordAsciiString, foundApplication.password);
+            if(!validPassword) return _response(res, 401, "Unauthorized - ax3", null, null);
+
+            const newToken = jwt.sign({_id: foundThirdParty._id, concern: 'thirdParty'}, process.env.JWT_SECRET, { expiresIn: '1h' });
 
             const data = {
                 auth_token: newToken,
             };
-
             _response(res, 200, "Data Found", null, data);
         } catch (error) {
             console.log(error);
@@ -87,6 +100,9 @@ class ThirdPartyController {
     }
 
     async show (req, res) {
+        if (req.user === undefined) {
+            _response(res, 401,"Unauthorized.", null, null);
+        }
         try {
             const { projection, population } = aqp(req.query);
 
@@ -112,6 +128,9 @@ class ThirdPartyController {
     }
 
     async store (req, res) {
+        if (req.user === undefined) {
+            _response(res, 401,"Unauthorized.", null, null);
+        }
         try {
             const createdThirdPartyData = req.body;
 

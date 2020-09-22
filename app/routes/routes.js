@@ -7,10 +7,13 @@ module.exports = (app) => {
     //Initialize Other Route
     const applicationController = require('../controllers/entity/application.controller');
     const ac = new applicationController();
+    const thirdPartyController = require('../controllers/system/thirdParty.controller');
+    const tpc = new thirdPartyController();
     app.post('/application/auth/login', ac.login);
+    const bankAccountController = require('../controllers/banking/bankAccount.controller');
+    const ba = new bankAccountController();
+    app.post('/bank/account/balance/request',verify, ba.balance);
     //End of Initialize Other Route
-
-
 
     //System Auth Route
     const authController = require('../controllers/system/auth.controller');
@@ -21,9 +24,15 @@ module.exports = (app) => {
     //System User Route
     const userController = require('../controllers/system/user.controller');
     const uc = new userController();
-    // app.post('/user', uc.store);
     app.post('/user',verify, uc.store);
     //End of System User Route
+
+    //Banking Bank Account Route
+    app.get('/bank/account',verify, ba.index);
+    app.get('/bank/account/profile',verify, ba.profile);
+    app.get('/bank/account/:id',verify, ba.show);
+    app.post('/bank/account',verify, ba.store);
+    //End of Banking Bank Account Route
 
     //Entity Application Route
     app.get('/application',verify, ac.index);
@@ -34,11 +43,9 @@ module.exports = (app) => {
     //End of Entity Application Route
 
     //System Third Party Route
-    const thirdPartyController = require('../controllers/system/thirdParty.controller');
-    const tpc = new thirdPartyController();
     app.get('/third/party',verify, tpc.index);
-    app.get('/third/party/authorize', tpc.authorize);
     app.get('/third/party/form',verify, tpc.showForm);
+    app.post('/third/party/authorize', verify, tpc.authorize);
     app.get('/third/party/:id',verify, tpc.show);
     app.post('/third/party',verify, tpc.store);
     //End of Third Party Route

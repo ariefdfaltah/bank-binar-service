@@ -163,6 +163,30 @@ const basicData = {
             v_data_route: ""
         }
     },
+    account_number: {
+        type: String,
+        required: true,
+        max: 255,
+        min: 6,
+        v_form_name: "Nomor Akun",
+        v_form_key: "account_number",
+        v_form_disable: false,
+        v_placeholder: "Nomor Akun",
+        v_type: "input",
+        v_data_route: ""
+    },
+    transaction_pin: {
+        type: String,
+        required: true,
+        max: 255,
+        min: 6,
+        v_form_name: "PIN Transaksi",
+        v_form_key: "transaction_pin",
+        v_form_disable: false,
+        v_placeholder: "PIN Transaksi",
+        v_type: "input",
+        v_data_route: ""
+    },
     no_sk: {
         type: String,
         required: true,

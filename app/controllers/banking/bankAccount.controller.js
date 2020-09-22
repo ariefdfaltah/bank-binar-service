@@ -1,37 +1,14 @@
 const aqp = require('api-query-params');
-const application = require('../../models/mongoose/entity/application.mongoose');
-const applicationData = require('../../models/data/entity/application.data');
-const thirdParty = require('../../models/mongoose/system/thirdParty.mongoose');
+const bankAccount = require('../../models/mongoose/banking/bankAccount.mongoose');
+const balanceRequest = require('../../models/mongoose/banking/balanceRequest.mongoose');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const _response = require('../../middlewares/_response');
 const autoBind = require('auto-bind');
 
 
-class ApplicationController {
+class BankAccountController {
     constructor() {
         autoBind(this);
-    }
-
-    async login (req, res) {
-        try {
-            const foundApplication = await application.findOne({code: req.body.code});
-            if(!foundApplication) return _response(res, 422, "Application not Found", null, null);
-
-            const validPassword = await bcrypt.compare(req.body.password, foundApplication.password);
-            if(!validPassword) return _response(res, 422, "User not Found", null, null);
-
-            const token = jwt.sign({_id: foundApplication._id, concern: 'application'}, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-            const data = {
-                token
-            };
-
-            return _response(res, 200, "Success", null, data);
-        } catch (error) {
-            console.log(error);
-            _response(res, 500, "Something Error", null, null);
-        }
     }
 
     async index(req, res) {
@@ -50,22 +27,10 @@ class ApplicationController {
                 populate: population,
             };
 
-            const { docs: data, ...meta } = await application
+            const { docs: data, ...meta } = await bankAccount
                 .paginate(filter, options);
 
             return _response(res, 200, "Data Found", meta, data);
-        } catch (error) {
-            console.log(error);
-            _response(res, 500, "Something Error", null, null);
-        }
-    }
-
-    async showForm (req, res) {
-        if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
-        }
-        try {
-            _response(res, 200, "Data Found", null, await applicationData.applicationScheme());
         } catch (error) {
             console.log(error);
             _response(res, 500, "Something Error", null, null);
@@ -88,12 +53,12 @@ class ApplicationController {
                 options.populate = population
             }
 
-            const foundApplication= await application
+            const foundBankAccount = await bankAccount
                 .findById(req.params.id, {}, options);
 
-            if (!foundApplication) return  _response(res, 200, false, "Data Not Found");
+            if (!foundBankAccount) return  _response(res, 200, false, "Data Not Found");
 
-            _response(res, 200, "Data Found", null, foundApplication);
+            _response(res, 200, "Data Found", null, foundBankAccount);
         } catch (error) {
             console.log(error);
             _response(res, 500, "Something Error", null, null);
@@ -101,8 +66,38 @@ class ApplicationController {
     }
 
     async profile (req, res) {
+        if (req.thirdParty === undefined) {
+            _response(res, 401,"Unauthorized.", null, null);
+        }
         try {
             const foundApplication= await thirdParty
+                .findOne({application: req.application._id});
+
+            if (!foundApplication) return  _response(res, 200,"Data Not Found", null, null);
+
+            _response(res, 200, "Data Found", null, foundApplication);
+        } catch (error) {
+            console.log(error);
+            _response(res, 500,"Something Error", null, null);
+        }
+    }
+
+    async balance (req, res) {
+        if (req.thirdParty === undefined) {
+            _response(res, 401,"Unauthorized.", null, null);
+        }
+        try {
+
+
+            const createdBalanceRequestData = {
+
+            }
+
+            const createdBankAccount = balanceRequest(createdBalanceRequestData);
+            await createdBankAccount.save();
+
+
+            const foundApplication= await balanceRequest
                 .findOne({application: req.application._id});
 
             if (!foundApplication) return  _response(res, 200,"Data Not Found", null, null);
@@ -119,15 +114,17 @@ class ApplicationController {
             _response(res, 401,"Unauthorized.", null, null);
         }
         try {
-            const createdApplicationData = req.body;
+            const createdBankAccountData = req.body;
+
+            console.log(createdBankAccountData);
 
             const salt = await bcrypt.genSalt(10);
-            createdApplicationData.password = await bcrypt.hash(req.body.password, salt);
+            createdBankAccountData.transaction_pin = await bcrypt.hash(req.body.transaction_pin, salt);
 
-            const createdApplication = application(createdApplicationData);
-            await createdApplication.save();
+            const createdBankAccount = bankAccount(createdBankAccountData);
+            await createdBankAccount.save();
 
-            _response(res, 201, "Data Created", null, createdApplication);
+            _response(res, 201, "Data Created", null, createdBankAccount);
         } catch (error) {
             console.log(error);
             _response(res, 500, "Something Error", null, null);
@@ -135,4 +132,4 @@ class ApplicationController {
     }
 }
 
-module.exports = ApplicationController;
+module.exports = BankAccountController;
