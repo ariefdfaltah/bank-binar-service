@@ -1,0 +1,36 @@
+{
+  "name": "siap-pendidikan-dell-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Indismart-Developer/app-pendidikan-internal-services.git"
+  },
+  "author": "PT Indismart Kreatif Solusi",
+  "license": "ISC",
+  "homepage": "https://github.com/Indismart-Developer/app-pendidikan-internal-services/blob/master/README.md",
+  "dependencies": {
+    "@hapi/joi": "^17.1.0",
+    "api-query-params": "^4.15.0",
+    "auto-bind": "^4.0.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.3",
+    "mongoose-aggregate-paginate-v2": "^1.0.42",
+    "mongoose-autopopulate": "^0.12.2",
+    "mongoose-paginate-v2": "^1.3.9",
+    "multer": "^1.4.2"
+  },
+  "devDependencies": {
+    "crypto-js": "^4.0.0",
+    "nodemon": "^2.0.2"
+  }
+}
