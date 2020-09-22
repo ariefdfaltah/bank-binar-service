@@ -11,14 +11,14 @@ MAINTAINER Arief Ditia Faltah
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 ENV PATH /usr/src/app/node_modules/.bin:$PATH
-ARG MONGO_URL
+ARG MONGO
 ARG JWT_SECRET
 ARG DEBUG
-ENV MONGO_URL ${MONGO_URL}
+ENV MONGO ${MONGO}
 ENV JWT_SECRET ${JWT_SECRET}
 ENV DEBUG ${DEBUG}
 COPY package*.json ./
-RUN echo "MONGO_URL=${MONGO_URL}" >> /usr/src/app/.env
+RUN echo "MONGO=${MONGO}" >> /usr/src/app/.env
 RUN echo "JWT_SECRET=${JWT_SECRET}" >> /usr/src/app/.env
 RUN echo "DEBUG=${DEBUG}" >> /usr/src/app/.env
 RUN npm cache clean --force
