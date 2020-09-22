@@ -27,6 +27,8 @@ module.exports = (app) => {
     //Banking Bank Account Route
     const bankAccountController = require('../controllers/banking/bankAccount.controller');
     const ba = new bankAccountController();
+    app.post('/bank/account/transfer/request',verify, ba.transfer);
+    app.post('/bank/account/transfer',verify, ba.doTransfer);
     app.post('/bank/account/balance/request',verify, ba.balance);
     app.post('/bank/account/balance',verify, ba.getBalance);
     app.get('/bank/account',verify, ba.index);
@@ -50,4 +52,12 @@ module.exports = (app) => {
     app.get('/third/party/:id',verify, tpc.show);
     app.post('/third/party',verify, tpc.store);
     //End of Third Party Route
+
+    //Banking Transaction Code Route
+    const transactionCodeController = require('../controllers/banking/transactionCode.controller');
+    const tcc = new transactionCodeController();
+    app.get('/transaction/code',verify, tcc.index);
+    app.get('/transaction/code/:id',verify, tcc.show);
+    app.post('/transaction/code',verify, tcc.store);
+    //End of Banking Transaction Code Route
 };

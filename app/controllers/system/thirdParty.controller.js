@@ -42,7 +42,7 @@ class ThirdPartyController {
 
     async showForm (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             return _response(res, 200,"Data Found", null, await thirdPartyData.thirdPartyScheme());
@@ -129,7 +129,7 @@ class ThirdPartyController {
 
     async store (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const createdThirdPartyData = req.body;

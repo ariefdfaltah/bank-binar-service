@@ -3,6 +3,7 @@ const bankAccount = require('../../models/mongoose/banking/bankAccount.mongoose'
 const stringHelper = require('../../helpers/string.helper');
 const thirdParty = require('../../models/mongoose/system/thirdParty.mongoose');
 const balanceRequest = require('../../models/mongoose/banking/balanceRequest.mongoose');
+const transferRequest = require('../../models/mongoose/banking/transferRequest.mongoose');
 const bcrypt = require('bcryptjs');
 const CryptoJS = require("crypto-js");
 const _response = require('../../middlewares/_response');
@@ -36,7 +37,7 @@ class BankAccountController {
             return _response(res, 200, "Data Found", meta, data);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 
@@ -61,10 +62,10 @@ class BankAccountController {
 
             if (!foundBankAccount) return  _response(res, 200, false, "Data Not Found");
 
-            _response(res, 200, "Data Found", null, foundBankAccount);
+            return _response(res, 200, "Data Found", null, foundBankAccount);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 
@@ -78,10 +79,10 @@ class BankAccountController {
 
             if (!foundApplication) return  _response(res, 200,"Data Not Found", null, null);
 
-            _response(res, 200, "Data Found", null, foundApplication);
+            return _response(res, 200, "Data Found", null, foundApplication);
         } catch (error) {
             console.log(error);
-            _response(res, 500,"Something Error", null, null);
+            return _response(res, 500,"Something Error", null, null);
         }
     }
 
@@ -131,13 +132,13 @@ class BankAccountController {
             const response = {
                 request_id: codeBase64.toString('base64')
             };
-            const createdBankAccount = balanceRequest(createdBalanceRequestData);
-            await createdBankAccount.save();
+            const createdBalanceRequest = balanceRequest(createdBalanceRequestData);
+            await createdBalanceRequest.save();
 
-            _response(res, 201, "Request Created", null, response);
+            return _response(res, 201, "Request Created", null, response);
         } catch (error) {
             console.log(error);
-            _response(res, 500,"Something Error", null, null);
+            return _response(res, 500,"Something Error", null, null);
         }
     }
 
@@ -191,10 +192,140 @@ class BankAccountController {
             foundBalanceRequest.status = 1;
             await foundBalanceRequest.save();
 
-            _response(res, 201, "Success", null, response);
+            return _response(res, 201, "Success", null, response);
         } catch (error) {
             console.log(error);
-            _response(res, 500,"Something Error", null, null);
+            return _response(res, 500,"Something Error", null, null);
+        }
+    }
+
+    async transfer (req, res) {
+        if (req.thirdParty === undefined) {
+            return _response(res, 401,"Unauthorized.", null, null);
+        }
+        try {
+            const rawData = req.body.data;
+            if (rawData === {} || rawData === undefined) { return _response(res, 401, "Unauthorized - cx1", null, null); }
+
+            const rawDataAscii = new Buffer.from(rawData, 'base64');
+            const rawDataAsciiString = rawDataAscii.toString();
+            const credentials = rawDataAsciiString.split(":");
+            if (credentials[0] === "" || credentials[1] === "" || credentials[0] === undefined || credentials[1] === undefined) { return _response(res, 401, "Unauthorized - cx2", null, null); }
+
+            const clientKeyAscii = new Buffer.from(credentials[1], 'base64');
+            const clientKeyAsciiString = clientKeyAscii.toString();
+            const foundThirdParty= await thirdParty
+                .findOne({public_key: clientKeyAsciiString});
+            if (!foundThirdParty) return _response(res, 401, "Unauthorized - ax1", null, null);
+
+            const password = foundThirdParty.secret_key;
+            // const xx = CryptoJS.AES.encrypt('MDgyMjI1OTQyODQx:MDgwOTg5OTk5:MTAwMDAwMA==', password);
+            // console.log(xx.toString());
+            const cryptoStr = credentials[0];
+            const bytes2 = CryptoJS.AES.decrypt(cryptoStr, password);
+            const text = bytes2.toString(CryptoJS.enc.Utf8);
+
+            const transferRequestData = text.split(":");
+
+            const originAscii = new Buffer.from(transferRequestData[0], 'base64');
+            const originAsciiString = originAscii.toString();
+
+            const destinationAscii = new Buffer.from(transferRequestData[1], 'base64');
+            const destinationAsciiString = destinationAscii.toString();
+
+            const nominalAscii = new Buffer.from(transferRequestData[2], 'base64');
+            const nominalAsciiString = nominalAscii.toString();
+            const nominalInt = parseInt(nominalAsciiString);
+
+            if (nominalInt < 50000) return _response(res, 422, "Unprocessable Entity - Minimal Transfer Amount 50000 - ax1", null, null);
+
+            const foundBankAccount = await bankAccount
+                .findOne({account_number: originAsciiString});
+            if (!foundBankAccount) return  _response(res, 401, false, "Origin Account not Found", null);
+
+            const foundBankAccount2 = await bankAccount
+                .findOne({account_number: destinationAsciiString});
+            if (!foundBankAccount2) return  _response(res, 401, false, "Destination Account not Found", null);
+
+            const sh = new stringHelper();
+            const code = await sh.randomString(64);
+            const codeBase64 = new Buffer.from(code);
+
+            const createdTransferRequestData = {
+                code: code,
+                nominal: nominalInt,
+                bank_account_origin: foundBankAccount._id,
+                bank_account_destination: foundBankAccount2._id,
+                status: 0
+            };
+            //
+            const response = {
+                request_id: codeBase64.toString('base64')
+            };
+            const createdTransferRequest = transferRequest(createdTransferRequestData);
+            await createdTransferRequest.save();
+
+            return _response(res, 201, "Request Created", null, response);
+        } catch (error) {
+            console.log(error);
+            return _response(res, 500,"Something Error", null, null);
+        }
+    }
+
+    async doTransfer (req, res) {
+        if (req.thirdParty === undefined) {
+            return _response(res, 401,"Unauthorized.", null, null);
+        }
+        try {
+            const rawData = req.body.data;
+            if (rawData === {} || rawData === undefined) { return _response(res, 401, "Unauthorized - cx1", null, null); }
+            //
+            const rawDataAscii = new Buffer.from(rawData, 'base64');
+            const rawDataAsciiString = rawDataAscii.toString();
+            const credentials = rawDataAsciiString.split(":");
+            if (credentials[0] === "" || credentials[1] === "" || credentials[0] === undefined || credentials[1] === undefined) { return _response(res, 401, "Unauthorized - cx2", null, null); }
+
+            const clientKeyAscii = new Buffer.from(credentials[1], 'base64');
+            const clientKeyAsciiString = clientKeyAscii.toString();
+            const foundThirdParty= await thirdParty
+                .findOne({public_key: clientKeyAsciiString});
+            if (!foundThirdParty) return _response(res, 401, "Unauthorized - ax1", null, null);
+
+            const password = foundThirdParty.secret_key;
+            // const xx = CryptoJS.AES.encrypt('dlRhckJvVUxiQ2h2YmI2bmU3TDB1QWlnSktyMzhIT1luUGJycnlXV3FZeG5UUkk2NnF3bWVRSDFjaklOOWxmTw==:OTQyODQx', password);
+            // console.log(xx.toString())
+            const cryptoStr = credentials[0];
+            const bytes2 = CryptoJS.AES.decrypt(cryptoStr, password);
+            const text = bytes2.toString(CryptoJS.enc.Utf8);
+
+            const applicationCredentials = text.split(":");
+
+            const requestCodeAscii = new Buffer.from(applicationCredentials[0], 'base64');
+            const requestCodeAsciiString = requestCodeAscii.toString();
+
+            const pinAscii = new Buffer.from(applicationCredentials[1], 'base64');
+            const pinAsciiString = pinAscii.toString();
+
+            const foundBalanceRequest = await balanceRequest
+                .findOne({code: requestCodeAsciiString});
+
+            if (!foundBalanceRequest) return  _response(res, 401, false, "Request not Found");
+
+            if (foundBalanceRequest.status !== 0) return  _response(res, 422, false, "Request Expired", null);
+
+            const validPassword = await bcrypt.compare(pinAsciiString, foundBalanceRequest.bank_account.transaction_pin);
+            if(!validPassword) return _response(res, 401, "Unauthorized - ax3", null, null);
+
+            const response = {
+                balance: foundBalanceRequest.bank_account.balance
+            };
+            foundBalanceRequest.status = 1;
+            await foundBalanceRequest.save();
+
+            return _response(res, 201, "Success", null, response);
+        } catch (error) {
+            console.log(error);
+            return _response(res, 500,"Something Error", null, null);
         }
     }
 
@@ -205,18 +336,16 @@ class BankAccountController {
         try {
             const createdBankAccountData = req.body;
 
-            console.log(createdBankAccountData);
-
             const salt = await bcrypt.genSalt(10);
             createdBankAccountData.transaction_pin = await bcrypt.hash(req.body.transaction_pin, salt);
 
             const createdBankAccount = bankAccount(createdBankAccountData);
             await createdBankAccount.save();
 
-            _response(res, 201, "Data Created", null, createdBankAccount);
+            return _response(res, 201, "Data Created", null, createdBankAccount);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 }
