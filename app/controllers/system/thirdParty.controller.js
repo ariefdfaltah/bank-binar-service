@@ -16,7 +16,7 @@ class ThirdPartyController {
 
     async index(req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const { page = 1, ...query } = req.query;
@@ -36,7 +36,7 @@ class ThirdPartyController {
             return _response(res, 200, "Data Found", meta, data);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 
@@ -45,10 +45,10 @@ class ThirdPartyController {
             _response(res, 401,"Unauthorized.", null, null);
         }
         try {
-            _response(res, 200,"Data Found", null, await thirdPartyData.thirdPartyScheme());
+            return _response(res, 200,"Data Found", null, await thirdPartyData.thirdPartyScheme());
         } catch (error) {
             console.log(error);
-            _response(res, 500,"Something Error", null, null);
+            return _response(res, 500,"Something Error", null, null);
         }
     }
 
@@ -92,16 +92,16 @@ class ThirdPartyController {
             const data = {
                 auth_token: newToken,
             };
-            _response(res, 200, "Data Found", null, data);
+            return _response(res, 200, "Data Found", null, data);
         } catch (error) {
             console.log(error);
-            _response(res, 500,"Something Error", null, null);
+            return _response(res, 500,"Something Error", null, null);
         }
     }
 
     async show (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const { projection, population } = aqp(req.query);
@@ -120,10 +120,10 @@ class ThirdPartyController {
 
             if (!foundThirdParty) return  _response(res, 200, false, "Data Not Found");
 
-            _response(res, 200, "Data Found", null, foundThirdParty);
+            return _response(res, 200, "Data Found", null, foundThirdParty);
         } catch (error) {
             console.log(error);
-            _response(res, 500,"Something Error", null, null);
+            return _response(res, 500,"Something Error", null, null);
         }
     }
 
@@ -147,10 +147,10 @@ class ThirdPartyController {
             const createdThirdParty = thirdParty(createdThirdPartyData);
             await createdThirdParty.save();
 
-            _response(res, 201,  "Data Created", null, createdThirdParty);
+            return _response(res, 201,  "Data Created", null, createdThirdParty);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 }

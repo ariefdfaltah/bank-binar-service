@@ -27,7 +27,7 @@ class AuthController {
             return _response(res, 200, "Success", null, data);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 }

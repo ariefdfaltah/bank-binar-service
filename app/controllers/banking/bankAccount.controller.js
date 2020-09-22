@@ -1,7 +1,10 @@
 const aqp = require('api-query-params');
 const bankAccount = require('../../models/mongoose/banking/bankAccount.mongoose');
+const stringHelper = require('../../helpers/string.helper');
+const thirdParty = require('../../models/mongoose/system/thirdParty.mongoose');
 const balanceRequest = require('../../models/mongoose/banking/balanceRequest.mongoose');
 const bcrypt = require('bcryptjs');
+const CryptoJS = require("crypto-js");
 const _response = require('../../middlewares/_response');
 const autoBind = require('auto-bind');
 
@@ -13,7 +16,7 @@ class BankAccountController {
 
     async index(req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const { page = 1, ...query } = req.query;
@@ -39,7 +42,7 @@ class BankAccountController {
 
     async show (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const { projection, population } = aqp(req.query);
@@ -67,7 +70,7 @@ class BankAccountController {
 
     async profile (req, res) {
         if (req.thirdParty === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const foundApplication= await thirdParty
@@ -84,25 +87,54 @@ class BankAccountController {
 
     async balance (req, res) {
         if (req.thirdParty === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
+            const rawData = req.body.data;
+            if (rawData === {} || rawData === undefined) { return _response(res, 401, "Unauthorized - cx1", null, null); }
+
+            const rawDataAscii = new Buffer.from(rawData, 'base64');
+            const rawDataAsciiString = rawDataAscii.toString();
+            const credentials = rawDataAsciiString.split(":");
+            if (credentials[0] === "" || credentials[1] === "" || credentials[0] === undefined || credentials[1] === undefined) { return _response(res, 401, "Unauthorized - cx2", null, null); }
+
+            const clientKeyAscii = new Buffer.from(credentials[1], 'base64');
+            const clientKeyAsciiString = clientKeyAscii.toString();
+            const foundThirdParty= await thirdParty
+                .findOne({public_key: clientKeyAsciiString});
+            if (!foundThirdParty) return _response(res, 401, "Unauthorized - ax1", null, null);
+
+            const password = foundThirdParty.secret_key;
+            const cryptoStr = credentials[0];
+            const bytes2 = CryptoJS.AES.decrypt(cryptoStr, password);
+            const text = bytes2.toString(CryptoJS.enc.Utf8);
+
+            const codeAscii = new Buffer.from(text, 'base64');
+            const codeAsciiString = codeAscii.toString();
+
+            const foundBankAccount = await bankAccount
+                .findOne({account_number: codeAsciiString});
+
+            if (!foundBankAccount) return  _response(res, 200, false, "Account Not Found");
+
+            const sh = new stringHelper();
+            const code = await sh.randomString(64);
+            const codeBase64 = new Buffer.from(code);
 
 
             const createdBalanceRequestData = {
+                code: code,
+                bank_account: foundBankAccount._id,
+                status: 0
+            };
 
-            }
-
+            const response = {
+                request_id: codeBase64.toString('base64')
+            };
             const createdBankAccount = balanceRequest(createdBalanceRequestData);
             await createdBankAccount.save();
 
-
-            const foundApplication= await balanceRequest
-                .findOne({application: req.application._id});
-
-            if (!foundApplication) return  _response(res, 200,"Data Not Found", null, null);
-
-            _response(res, 200, "Data Found", null, foundApplication);
+            _response(res, 201, "Request Created", null, response);
         } catch (error) {
             console.log(error);
             _response(res, 500,"Something Error", null, null);
@@ -111,7 +143,7 @@ class BankAccountController {
 
     async store (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const createdBankAccountData = req.body;

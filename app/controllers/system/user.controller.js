@@ -11,7 +11,7 @@ class UserController {
 
     async store (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const rawData = req.body.data;
@@ -25,10 +25,10 @@ class UserController {
             const createdUser = user(createdUserData);
             await createdUser.save();
 
-            _response(res, 201, true, "Data Created", {}, createdUser);
+            return _response(res, 201, true, "Data Created", {}, createdUser);
         } catch (error) {
             console.log(error);
-            _response(res, 500, false, "Something Error");
+            return _response(res, 500, false, "Something Error");
         }
     }
 }

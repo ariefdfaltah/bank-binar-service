@@ -30,13 +30,13 @@ class ApplicationController {
             return _response(res, 200, "Success", null, data);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 
     async index(req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const { page = 1, ...query } = req.query;
@@ -62,19 +62,19 @@ class ApplicationController {
 
     async showForm (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
-            _response(res, 200, "Data Found", null, await applicationData.applicationScheme());
+            return _response(res, 200, "Data Found", null, await applicationData.applicationScheme());
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 
     async show (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const { projection, population } = aqp(req.query);
@@ -93,10 +93,10 @@ class ApplicationController {
 
             if (!foundApplication) return  _response(res, 200, false, "Data Not Found");
 
-            _response(res, 200, "Data Found", null, foundApplication);
+            return _response(res, 200, "Data Found", null, foundApplication);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 
@@ -107,16 +107,16 @@ class ApplicationController {
 
             if (!foundApplication) return  _response(res, 200,"Data Not Found", null, null);
 
-            _response(res, 200, "Data Found", null, foundApplication);
+            return _response(res, 200, "Data Found", null, foundApplication);
         } catch (error) {
             console.log(error);
-            _response(res, 500,"Something Error", null, null);
+            return _response(res, 500,"Something Error", null, null);
         }
     }
 
     async store (req, res) {
         if (req.user === undefined) {
-            _response(res, 401,"Unauthorized.", null, null);
+            return _response(res, 401,"Unauthorized.", null, null);
         }
         try {
             const createdApplicationData = req.body;
@@ -127,10 +127,10 @@ class ApplicationController {
             const createdApplication = application(createdApplicationData);
             await createdApplication.save();
 
-            _response(res, 201, "Data Created", null, createdApplication);
+            return _response(res, 201, "Data Created", null, createdApplication);
         } catch (error) {
             console.log(error);
-            _response(res, 500, "Something Error", null, null);
+            return _response(res, 500, "Something Error", null, null);
         }
     }
 }
