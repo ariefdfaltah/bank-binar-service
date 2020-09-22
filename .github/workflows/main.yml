@@ -13,7 +13,7 @@ jobs:
       - name: Publish to Github Packages Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         env:
-          MONGO_URL: ${{ secrets.MONGO_URL }}
+          MONGO: ${{ secrets.MONGO }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DEBUG: ${{ secrets.DEBUG }}
         with:

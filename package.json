@@ -1,5 +1,5 @@
 {
-  "name": "siap-pendidikan-dell-service",
+  "name": "bank-binar-service",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,11 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Indismart-Developer/app-pendidikan-internal-services.git"
+    "url": "git+https://github.com/ariefdfaltah/bank-binar-service.git"
   },
-  "author": "PT Indismart Kreatif Solusi",
+  "author": "ariefdfaltah",
   "license": "ISC",
-  "homepage": "https://github.com/Indismart-Developer/app-pendidikan-internal-services/blob/master/README.md",
+  "homepage": "https://github.com/ariefdfaltah/bank-binar-service/blob/master/README.md",
   "dependencies": {
     "@hapi/joi": "^17.1.0",
     "api-query-params": "^4.15.0",
