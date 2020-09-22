@@ -10,7 +10,7 @@ const balanceRequestSchema = new collection.Schema(
                     required: false,
                     ref : 'BankAccount',
                     autopopulate : {
-                            select: 'name account_number transaction_pin',
+                            select: 'name account_number transaction_pin balance',
                             maxDepth: 1
                     }
             },

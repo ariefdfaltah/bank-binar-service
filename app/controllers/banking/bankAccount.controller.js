@@ -115,7 +115,7 @@ class BankAccountController {
             const foundBankAccount = await bankAccount
                 .findOne({account_number: codeAsciiString});
 
-            if (!foundBankAccount) return  _response(res, 200, false, "Account Not Found");
+            if (!foundBankAccount) return  _response(res, 401, false, "Account not Found", null);
 
             const sh = new stringHelper();
             const code = await sh.randomString(64);
@@ -135,6 +135,63 @@ class BankAccountController {
             await createdBankAccount.save();
 
             _response(res, 201, "Request Created", null, response);
+        } catch (error) {
+            console.log(error);
+            _response(res, 500,"Something Error", null, null);
+        }
+    }
+
+    async getBalance (req, res) {
+        if (req.thirdParty === undefined) {
+            return _response(res, 401,"Unauthorized.", null, null);
+        }
+        try {
+            const rawData = req.body.data;
+            if (rawData === {} || rawData === undefined) { return _response(res, 401, "Unauthorized - cx1", null, null); }
+            //
+            const rawDataAscii = new Buffer.from(rawData, 'base64');
+            const rawDataAsciiString = rawDataAscii.toString();
+            const credentials = rawDataAsciiString.split(":");
+            if (credentials[0] === "" || credentials[1] === "" || credentials[0] === undefined || credentials[1] === undefined) { return _response(res, 401, "Unauthorized - cx2", null, null); }
+
+            const clientKeyAscii = new Buffer.from(credentials[1], 'base64');
+            const clientKeyAsciiString = clientKeyAscii.toString();
+            const foundThirdParty= await thirdParty
+                .findOne({public_key: clientKeyAsciiString});
+            if (!foundThirdParty) return _response(res, 401, "Unauthorized - ax1", null, null);
+
+            const password = foundThirdParty.secret_key;
+            // const xx = CryptoJS.AES.encrypt('dlRhckJvVUxiQ2h2YmI2bmU3TDB1QWlnSktyMzhIT1luUGJycnlXV3FZeG5UUkk2NnF3bWVRSDFjaklOOWxmTw==:OTQyODQx', password);
+            // console.log(xx.toString())
+            const cryptoStr = credentials[0];
+            const bytes2 = CryptoJS.AES.decrypt(cryptoStr, password);
+            const text = bytes2.toString(CryptoJS.enc.Utf8);
+
+            const applicationCredentials = text.split(":");
+
+            const requestCodeAscii = new Buffer.from(applicationCredentials[0], 'base64');
+            const requestCodeAsciiString = requestCodeAscii.toString();
+
+            const pinAscii = new Buffer.from(applicationCredentials[1], 'base64');
+            const pinAsciiString = pinAscii.toString();
+
+            const foundBalanceRequest = await balanceRequest
+                .findOne({code: requestCodeAsciiString});
+
+            if (!foundBalanceRequest) return  _response(res, 401, false, "Request not Found");
+
+            if (foundBalanceRequest.status !== 0) return  _response(res, 422, false, "Request Expired", null);
+
+            const validPassword = await bcrypt.compare(pinAsciiString, foundBalanceRequest.bank_account.transaction_pin);
+            if(!validPassword) return _response(res, 401, "Unauthorized - ax3", null, null);
+
+            const response = {
+                balance: foundBalanceRequest.bank_account.balance
+            };
+            foundBalanceRequest.status = 1;
+            await foundBalanceRequest.save();
+
+            _response(res, 201, "Success", null, response);
         } catch (error) {
             console.log(error);
             _response(res, 500,"Something Error", null, null);

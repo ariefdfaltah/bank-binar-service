@@ -4,11 +4,8 @@
     <list default="true" id="73d60f55-ad98-4f29-8a77-2f8060807834" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/controllers/banking/bankAccount.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/banking/bankAccount.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/entity/application.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/entity/application.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/system/auth.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/system/auth.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/system/thirdParty.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/system/thirdParty.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/system/user.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/system/user.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/helpers/string.helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/helpers/string.helper.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/mongoose/banking/balanceRequest.mongoose.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/mongoose/banking/balanceRequest.mongoose.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/routes.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/routes.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -67,7 +64,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1600694772469</updated>
-      <workItem from="1600694773774" duration="21134000" />
+      <workItem from="1600694773774" duration="22913000" />
     </task>
     <servers />
   </component>

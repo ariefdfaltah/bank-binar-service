@@ -10,9 +10,6 @@ module.exports = (app) => {
     const thirdPartyController = require('../controllers/system/thirdParty.controller');
     const tpc = new thirdPartyController();
     app.post('/application/auth/login', ac.login);
-    const bankAccountController = require('../controllers/banking/bankAccount.controller');
-    const ba = new bankAccountController();
-    app.post('/bank/account/balance/request',verify, ba.balance);
     //End of Initialize Other Route
 
     //System Auth Route
@@ -28,6 +25,10 @@ module.exports = (app) => {
     //End of System User Route
 
     //Banking Bank Account Route
+    const bankAccountController = require('../controllers/banking/bankAccount.controller');
+    const ba = new bankAccountController();
+    app.post('/bank/account/balance/request',verify, ba.balance);
+    app.post('/bank/account/balance',verify, ba.getBalance);
     app.get('/bank/account',verify, ba.index);
     app.get('/bank/account/profile',verify, ba.profile);
     app.get('/bank/account/:id',verify, ba.show);
