@@ -1,4 +1,4 @@
-name: Student Monitoring & Early Warning System Service
+name: Bank Binar Service
 
 on:
   push:
@@ -17,12 +17,12 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DEBUG: ${{ secrets.DEBUG }}
         with:
-          name: dhian-co/siap-pendidikan-dell-service/siap-pendidikan-dell-service-staging
+          name: ariefdfaltah/bank-binar-service/bank-binar-service
           registry: docker.pkg.github.com
           username: ${{ secrets.G_USERNAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
           dockerfile: Dockerfile
-          buildargs: MONGO_URL,JWT_SECRET,DEBUG
+          buildargs: MONGO,JWT_SECRET,DEBUG
           tags: latest
       - name: Deploy package to digitalocean
         uses: appleboy/ssh-action@master
