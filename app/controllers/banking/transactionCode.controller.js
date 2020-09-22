@@ -54,7 +54,7 @@ class TransactionCodeController {
             const foundTransactionCode = await transactionCode
                 .findById(req.params.id, {}, options);
 
-            if (!foundTransactionCode) return  _response(res, 200, false, "Data Not Found");
+            if (!foundTransactionCode) return  _response(res, 422, "Data Not Found", null, null);
 
             return _response(res, 200, "Data Found", null, foundTransactionCode);
         } catch (error) {

@@ -91,7 +91,7 @@ class ApplicationController {
             const foundApplication= await application
                 .findById(req.params.id, {}, options);
 
-            if (!foundApplication) return  _response(res, 200, false, "Data Not Found");
+            if (!foundApplication) return  _response(res, 422, "Data Not Found", null, null);
 
             return _response(res, 200, "Data Found", null, foundApplication);
         } catch (error) {
@@ -105,7 +105,7 @@ class ApplicationController {
             const foundApplication= await thirdParty
                 .findOne({application: req.application._id});
 
-            if (!foundApplication) return  _response(res, 200,"Data Not Found", null, null);
+            if (!foundApplication) return  _response(res, 422,"Data Not Found", null, null);
 
             return _response(res, 200, "Data Found", null, foundApplication);
         } catch (error) {

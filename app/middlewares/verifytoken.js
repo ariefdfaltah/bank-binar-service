@@ -6,7 +6,7 @@ const _response = require('../middlewares/_response');
 module.exports = async function auth (req, res, next){
     try {
         const authorization = req.header('Authorization');
-        if(!authorization) return res.status(401).send({status:false,message: "Unauthorized."});
+        if(!authorization) return _response(res, 401, "Unauthorized - mx1", null, null);
 
         const token = authorization.split('Bearer ');
 
@@ -16,7 +16,7 @@ module.exports = async function auth (req, res, next){
         } else if (data.concern === 'thirdParty') {
             const foundThirdParty= await thirdParty
                 .findById(data._id);
-            if (!foundThirdParty) return _response(res, 401, "Unauthorized - mx1", null, null);
+            if (!foundThirdParty) return _response(res, 401, "Unauthorized - mx2", null, null);
             req.thirdParty = foundThirdParty
             console.log(foundThirdParty)
         } else {
@@ -25,6 +25,6 @@ module.exports = async function auth (req, res, next){
         next();
     } catch (error){
         console.log(error);
-        res.status(401).send({status:false,message: "Unauthorized."});
+        return _response(res, 401, "Unauthorized - mx3", null, null);
     }
 };

@@ -4,6 +4,7 @@ const stringHelper = require('../../helpers/string.helper');
 const thirdParty = require('../../models/mongoose/system/thirdParty.mongoose');
 const balanceRequest = require('../../models/mongoose/banking/balanceRequest.mongoose');
 const transferRequest = require('../../models/mongoose/banking/transferRequest.mongoose');
+const transactionHistory = require('../../models/mongoose/banking/transactionHistory.mongoose');
 const bcrypt = require('bcryptjs');
 const CryptoJS = require("crypto-js");
 const _response = require('../../middlewares/_response');
@@ -60,7 +61,7 @@ class BankAccountController {
             const foundBankAccount = await bankAccount
                 .findById(req.params.id, {}, options);
 
-            if (!foundBankAccount) return  _response(res, 200, false, "Data Not Found");
+            if (!foundBankAccount) return  _response(res, 422,"Data Not Found", null, null);
 
             return _response(res, 200, "Data Found", null, foundBankAccount);
         } catch (error) {
@@ -77,7 +78,7 @@ class BankAccountController {
             const foundApplication= await thirdParty
                 .findOne({application: req.application._id});
 
-            if (!foundApplication) return  _response(res, 200,"Data Not Found", null, null);
+            if (!foundApplication) return  _response(res, 422,"Data Not Found", null, null);
 
             return _response(res, 200, "Data Found", null, foundApplication);
         } catch (error) {
@@ -116,7 +117,7 @@ class BankAccountController {
             const foundBankAccount = await bankAccount
                 .findOne({account_number: codeAsciiString});
 
-            if (!foundBankAccount) return  _response(res, 401, false, "Account not Found", null);
+            if (!foundBankAccount) return  _response(res, 422, "Account not Found", null, null);
 
             const sh = new stringHelper();
             const code = await sh.randomString(64);
@@ -179,9 +180,9 @@ class BankAccountController {
             const foundBalanceRequest = await balanceRequest
                 .findOne({code: requestCodeAsciiString});
 
-            if (!foundBalanceRequest) return  _response(res, 401, false, "Request not Found");
+            if (!foundBalanceRequest) return  _response(res, 422, "Request not Found", null, null);
 
-            if (foundBalanceRequest.status !== 0) return  _response(res, 422, false, "Request Expired", null);
+            if (foundBalanceRequest.status !== 0) return  _response(res, 422,"Request Expired", null, null);
 
             const validPassword = await bcrypt.compare(pinAsciiString, foundBalanceRequest.bank_account.transaction_pin);
             if(!validPassword) return _response(res, 401, "Unauthorized - ax3", null, null);
@@ -241,11 +242,11 @@ class BankAccountController {
 
             const foundBankAccount = await bankAccount
                 .findOne({account_number: originAsciiString});
-            if (!foundBankAccount) return  _response(res, 401, false, "Origin Account not Found", null);
+            if (!foundBankAccount) return  _response(res, 422, "Origin Account not Found", null, null);
 
             const foundBankAccount2 = await bankAccount
                 .findOne({account_number: destinationAsciiString});
-            if (!foundBankAccount2) return  _response(res, 401, false, "Destination Account not Found", null);
+            if (!foundBankAccount2) return  _response(res, 422, "Destination Account not Found", null, null);
 
             const sh = new stringHelper();
             const code = await sh.randomString(64);
@@ -292,8 +293,8 @@ class BankAccountController {
             if (!foundThirdParty) return _response(res, 401, "Unauthorized - ax1", null, null);
 
             const password = foundThirdParty.secret_key;
-            // const xx = CryptoJS.AES.encrypt('dlRhckJvVUxiQ2h2YmI2bmU3TDB1QWlnSktyMzhIT1luUGJycnlXV3FZeG5UUkk2NnF3bWVRSDFjaklOOWxmTw==:OTQyODQx', password);
-            // console.log(xx.toString())
+            // const xx = CryptoJS.AES.encrypt('ajZtUGlEZUdVQlRyMkZERTZOVFlYWms1cVR4UFhXaWVFTDVpMjgxZTNKV2U4OWVCUXlBc1pNVzFmeHBCczdJTQ==:OTQyODQx', password);
+            // console.log(xx.toString());
             const cryptoStr = credentials[0];
             const bytes2 = CryptoJS.AES.decrypt(cryptoStr, password);
             const text = bytes2.toString(CryptoJS.enc.Utf8);
@@ -306,23 +307,55 @@ class BankAccountController {
             const pinAscii = new Buffer.from(applicationCredentials[1], 'base64');
             const pinAsciiString = pinAscii.toString();
 
-            const foundBalanceRequest = await balanceRequest
+            const foundTransferRequest = await transferRequest
                 .findOne({code: requestCodeAsciiString});
 
-            if (!foundBalanceRequest) return  _response(res, 401, false, "Request not Found");
+            if (!foundTransferRequest) return  _response(res, 422, "Request not Found", null, null);
 
-            if (foundBalanceRequest.status !== 0) return  _response(res, 422, false, "Request Expired", null);
+            if (foundTransferRequest.status !== 0) return  _response(res, 422, false, "Request Expired", null);
 
-            const validPassword = await bcrypt.compare(pinAsciiString, foundBalanceRequest.bank_account.transaction_pin);
+            const validPassword = await bcrypt.compare(pinAsciiString, foundTransferRequest.bank_account_origin.transaction_pin);
             if(!validPassword) return _response(res, 401, "Unauthorized - ax3", null, null);
 
-            const response = {
-                balance: foundBalanceRequest.bank_account.balance
-            };
-            foundBalanceRequest.status = 1;
-            await foundBalanceRequest.save();
+            const foundBankAccountOrigin = await bankAccount.findById(foundTransferRequest.bank_account_origin._id);
+            if(!foundBankAccountOrigin) return _response(res, 401, "Unauthorized - ax4", null, null);
 
-            return _response(res, 201, "Success", null, response);
+            const foundBankAccountDestination = await bankAccount.findById(foundTransferRequest.bank_account_destination._id);
+            if(!foundBankAccountDestination) return _response(res, 401, "Unauthorized - ax5", null, null);
+
+            const added = foundBankAccountDestination.balance + foundTransferRequest.nominal;
+            const reduced = foundBankAccountOrigin.balance - foundTransferRequest.nominal;
+
+            const addedData = {
+                bank_account: foundBankAccountDestination._id,
+                balance_before_transaction: foundBankAccountDestination.balance,
+                balance_after_transaction: added,
+                nominal_on_transaction: foundTransferRequest.nominal,
+                code: '5f6a098f26674635192c006e'
+            };
+
+            const reducedData = {
+                bank_account: foundBankAccountOrigin._id,
+                balance_before_transaction: foundBankAccountOrigin.balance,
+                balance_after_transaction: reduced,
+                nominal_on_transaction: foundTransferRequest.nominal,
+                code: '5f6a099b26674635192c006f'
+            };
+
+            foundBankAccountOrigin.balance = reduced;
+            await foundBankAccountOrigin.save();
+            foundBankAccountDestination.balance = added;
+            await foundBankAccountDestination.save();
+
+            const createdAddedData = transactionHistory(addedData);
+            await createdAddedData.save();
+            const createdReducedData = transactionHistory(reducedData);
+            await createdReducedData.save();
+
+            foundTransferRequest.status = 1;
+            await foundTransferRequest.save();
+
+            return _response(res, 201, "Success", null, null);
         } catch (error) {
             console.log(error);
             return _response(res, 500,"Something Error", null, null);

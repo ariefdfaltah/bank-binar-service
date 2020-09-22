@@ -118,7 +118,7 @@ class ThirdPartyController {
             const foundThirdParty= await thirdParty
                 .findById(req.params.id, {}, options);
 
-            if (!foundThirdParty) return  _response(res, 200, false, "Data Not Found");
+            if (!foundThirdParty) return  _response(res, 422, false, "Data Not Found");
 
             return _response(res, 200, "Data Found", null, foundThirdParty);
         } catch (error) {
