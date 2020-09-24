@@ -28,15 +28,15 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/app/models/mongoose/banking" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/.temp" />
       <recent name="$PROJECT_DIR$/app/models/mongoose/banking" />
       <recent name="$PROJECT_DIR$/app/controllers/banking" />
       <recent name="$PROJECT_DIR$/app/models/mongoose/entity" />
       <recent name="$PROJECT_DIR$/app/controllers/system" />
-      <recent name="$PROJECT_DIR$/app/models/mongoose/system" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/models/mongoose/banking" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -65,6 +65,7 @@
       <workItem from="1600832770357" duration="3000" />
       <workItem from="1600833618158" duration="598000" />
       <workItem from="1600840583100" duration="102000" />
+      <workItem from="1600944049838" duration="484000" />
     </task>
     <servers />
   </component>
